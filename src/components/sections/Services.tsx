@@ -1,102 +1,293 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "@/components/ui/Icons";
-import { SectionTop } from "@/components/ui/SectionHeading";
-import { Reveal } from "@/components/ui/Reveal";
-import { services } from "@/lib/content";
+import React, { useState, useRef, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
-export function Services() {
-  const track = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
+interface ServiceItem {
+  id: string;
+  tag: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  description: string;
+  specs: string[];
+  reliefLabel: string;
+}
 
-  const sync = useCallback(() => {
-    const el = track.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    setProgress(max > 0 ? el.scrollLeft / max : 1);
-  }, []);
+const SERVICES: ServiceItem[] = [
+  {
+    id: "logo",
+    tag: "01 / DIGITIZING",
+    title: "Logo Digitizing",
+    subtitle: "Left-Chest, Full-Back & Corporate Apparel",
+    image: "/assets/logo.jpg",
+    description:
+      "Crisp satin lettering down to 4mm, balanced push-pull compensation, and clean directional fills engineered for polos, hoodies, and workwear.",
+    specs: ["0.40mm Satin Density", "Edge-Run + Zigzag Underlay", "Zero Thread-Break Routing"],
+    reliefLabel: "Flat Twill & Satin Relief (1.2mm)",
+  },
+  {
+    id: "puff",
+    tag: "02 / DIMENSION",
+    title: "3D Puff Digitizing",
+    subtitle: "High-Loft Raised Foam Embroidery",
+    image: "/assets/puff.jpg",
+    description:
+      "Perforated satin capping and tapered end-caps designed specifically to slice and seal 2mm–3mm EVA puff foam cleanly without exposed foam edges.",
+    specs: ["2.5mm–3.0mm EVA Foam Loft", "Perforated Needle-Cut Caps", "High-Tension Satin Capping"],
+    reliefLabel: "Extruded 3D EVA Foam Loft (3.0mm)",
+  },
+  {
+    id: "cap",
+    tag: "03 / HEADWEAR",
+    title: "Cap & Hat Digitizing",
+    subtitle: "270° Curved Crown & Structured Front Panels",
+    image: "/assets/cap.jpg",
+    description:
+      "Engineered from the bottom-up and center-out so structured 6-panel caps and Richardson 112 truckers stitch flat without center-seam flagging.",
+    specs: ["Center-Out Stitch Sequence", "Crown Seam Guard Underlay", "270° Cap Frame Ready"],
+    reliefLabel: "Curved 270° Crown Geometry",
+  },
+  {
+    id: "patch",
+    tag: "04 / PATCHES",
+    title: "Patch Digitizing",
+    subtitle: "Custom Embroidered & Merrowed Badges",
+    image: "/assets/patch.jpg",
+    description:
+      "Heavy-duty twill fill, satin or simulated merrow borders, and precise die-cut / laser-cut placement lines for uniform emblems and tactical patches.",
+    specs: ["3.5mm Merrow Border Ring", "Placement + Tack-Down Stops", "Iron-On / Velcro Ready"],
+    reliefLabel: "Braided Merrow Border Crest",
+  },
+];
 
-  useEffect(() => {
-    sync();
-    window.addEventListener("resize", sync);
-    return () => window.removeEventListener("resize", sync);
-  }, [sync]);
+function ServiceReliefMesh3D({ serviceId }: { serviceId: string }) {
+  const meshRef = useRef<THREE.Group>(null);
 
-  const scrollBy = (dir: -1 | 1) => {
-    const el = track.current;
-    el?.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
-  };
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (meshRef.current) {
+      meshRef.current.rotation.y = t * 0.45;
+      meshRef.current.rotation.x = Math.sin(t * 0.6) * 0.25 + 0.35;
+    }
+  });
 
   return (
-    <section id="services" className="section-x section-y border-b border-line">
-      <SectionTop
-        eyebrow="Our services"
-        title={
-          <>
-            Every detail.
-            <br />
-            Every stitch. <em className="text-accent">Considered.</em>
-          </>
-        }
-        intro="From your first logo to your next production run, get files crafted for the way you work."
-        aside={
-          <div className="ml-auto flex gap-2.5 md:ml-0">
-            {([-1, 1] as const).map((dir) => (
-              <button
-                key={dir}
-                type="button"
-                onClick={() => scrollBy(dir)}
-                aria-label={dir < 0 ? "Previous services" : "Next services"}
-                className="grid size-10 place-items-center rounded-full border border-[#59615b] transition-colors hover:border-brand hover:bg-brand/10 max-md:size-9"
-              >
-                {dir < 0 ? <ArrowLeft className="size-4" /> : <ArrowRight className="size-4" />}
-              </button>
-            ))}
-          </div>
-        }
-      />
+    <group ref={meshRef}>
+      {serviceId === "logo" && (
+        <group>
+          <mesh>
+            <torusGeometry args={[1.1, 0.14, 24, 72]} />
+            <meshStandardMaterial color="#f31e39" roughness={0.3} metalness={0.2} />
+          </mesh>
+          <mesh>
+            <torusKnotGeometry args={[0.55, 0.1, 80, 16]} />
+            <meshStandardMaterial color="#f0ede4" roughness={0.25} metalness={0.2} />
+          </mesh>
+        </group>
+      )}
 
-      <div
-        ref={track}
-        onScroll={sync}
-        className="no-scrollbar -mx-1 grid snap-x snap-mandatory auto-cols-[78%] grid-flow-col gap-4 overflow-x-auto px-1 pb-1 sm:auto-cols-[calc((100%-1rem)/2)] lg:auto-cols-[calc((100%-3.375rem)/4)] lg:gap-[1.125rem]"
-      >
-        {services.map((s, i) => (
-          <Reveal key={s.title} delay={i * 0.08} className="snap-start">
-            <a
-              href={s.href}
-              className="surface-card group flex h-full flex-col overflow-hidden hover:-translate-y-1 hover:shadow-[0_20px_50px_-20px_rgb(243_30_57/0.35)]"
+      {serviceId === "puff" && (
+        <group>
+          {/* Underlying EVA Foam Core */}
+          <mesh position={[0, 0, -0.08]}>
+            <torusGeometry args={[0.95, 0.32, 32, 72]} />
+            <meshStandardMaterial color="#222a26" roughness={0.7} />
+          </mesh>
+          {/* High-Loft Extruded Satin Capping */}
+          <mesh position={[0, 0, 0.08]}>
+            <torusGeometry args={[0.95, 0.36, 36, 72]} />
+            <meshStandardMaterial
+              color="#f31e39"
+              emissive="#541a24"
+              emissiveIntensity={0.45}
+              roughness={0.22}
+              metalness={0.25}
+            />
+          </mesh>
+        </group>
+      )}
+
+      {serviceId === "cap" && (
+        <group>
+          {/* Curved Cap Crown Surface */}
+          <mesh rotation={[0.4, 0, 0]}>
+            <sphereGeometry args={[1.35, 36, 24, 0, Math.PI * 2, 0, Math.PI * 0.42]} />
+            <meshStandardMaterial color="#191d1d" side={THREE.DoubleSide} roughness={0.8} />
+          </mesh>
+          {/* Center-Out Arch Embroidery on Crown */}
+          <mesh position={[0, 0.85, 0.45]} rotation={[0.6, 0, 0]}>
+            <torusGeometry args={[0.62, 0.12, 20, 48]} />
+            <meshStandardMaterial color="#f31e39" roughness={0.25} />
+          </mesh>
+        </group>
+      )}
+
+      {serviceId === "patch" && (
+        <group>
+          {/* Heavy Twill Patch Base */}
+          <mesh>
+            <cylinderGeometry args={[1.25, 1.25, 0.12, 6]} rotation={[Math.PI / 2, 0, 0]} />
+            <meshStandardMaterial color="#171b1a" roughness={0.85} />
+          </mesh>
+          {/* Thick Merrowed Border Ring */}
+          <mesh>
+            <torusGeometry args={[1.22, 0.18, 24, 6]} />
+            <meshStandardMaterial color="#f31e39" roughness={0.28} />
+          </mesh>
+          {/* Inner Emblem */}
+          <mesh position={[0, 0, 0.08]}>
+            <torusGeometry args={[0.55, 0.1, 20, 48]} />
+            <meshStandardMaterial color="#f0ede4" roughness={0.3} />
+          </mesh>
+        </group>
+      )}
+    </group>
+  );
+}
+
+export default function Services() {
+  const [selectedService, setSelectedService] = useState<ServiceItem>(SERVICES[1]);
+  const [isVisible, setIsVisible] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="services"
+      className="relative w-full bg-[#111515] text-[#f0ede4] py-20 md:py-28 border-b border-[#303635]"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Heading */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <div className="text-xs font-mono uppercase tracking-widest text-[#f31e39] mb-2">
+              02 / SPECIALIZED DIGITIZING SERVICES
+            </div>
+            <h2
+              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              className="text-3xl sm:text-4xl md:text-5xl font-normal text-[#f0ede4]"
             >
-              <div className="relative h-60 overflow-hidden lg:h-56">
-                <Image
-                  src={s.image}
-                  alt={s.alt}
-                  fill
-                  sizes="(min-width:1024px) 25vw, (min-width:640px) 50vw, 78vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-panel/70 via-transparent to-transparent" />
-              </div>
-              <div className="relative flex-1 p-5">
-                <span className="text-[9px] tracking-[0.15em] text-[#939d94]">{s.tag}</span>
-                <h3 className="mb-2 mt-2 text-base font-medium">{s.title}</h3>
-                <p className="max-w-40 text-xs text-muted">{s.text}</p>
-                <span className="absolute bottom-5 right-4 grid size-8 place-items-center rounded-full border border-line text-brand transition-all duration-300 group-hover:border-brand group-hover:bg-brand group-hover:text-white">
-                  <ArrowUpRight className="size-3.5" />
+              Engineered for Every Garment & Surface
+            </h2>
+          </div>
+          <p className="max-w-md text-sm sm:text-base text-[#afb2ac]">
+            Select any specialty below to inspect its 3D stitch elevation, underlay construction, and production parameters.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* Left 7 Columns: Responsive 2x2 3D Tilt Service Cards */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {SERVICES.map((srv) => {
+              const active = selectedService.id === srv.id;
+              return (
+                <button
+                  key={srv.id}
+                  type="button"
+                  onClick={() => setSelectedService(srv)}
+                  className={`group text-left rounded-2xl p-6 transition-all duration-300 border flex flex-col justify-between ${
+                    active
+                      ? "bg-[#222a26] border-[#f31e39] shadow-[0_12px_35px_rgba(243,30,57,0.18)] -translate-y-1"
+                      : "bg-[#191d1d] border-[#303635] hover:border-[#afb2ac] hover:-translate-y-0.5"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#f31e39]">{srv.tag}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] ${
+                          active
+                            ? "bg-[#f31e39] text-[#f0ede4]"
+                            : "bg-[#171b1a] text-[#afb2ac]"
+                        }`}
+                      >
+                        {active ? "ACTIVE IN 3D" : "INSPECT 3D"}
+                      </span>
+                    </div>
+
+                    <h3
+                      style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                      className="text-xl sm:text-2xl text-[#f0ede4] mt-3"
+                    >
+                      {srv.title}
+                    </h3>
+                    <p className="text-xs font-mono text-[#afb2ac] mt-1">
+                      {srv.subtitle}
+                    </p>
+                    <p className="text-sm text-[#afb2ac] leading-relaxed mt-3">
+                      {srv.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-5 pt-4 border-t border-[#303635]/80 space-y-1.5">
+                    {srv.specs.map((spec) => (
+                      <div
+                        key={spec}
+                        className="flex items-center gap-2 text-xs font-mono text-[#f0ede4]"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#f31e39]" />
+                        <span>{spec}</span>
+                      </div>
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right 5 Columns: Live 3D Surface Relief Inspector */}
+          <div className="lg:col-span-5 rounded-2xl border border-[#303635] bg-[#191d1d] p-5 sm:p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between border-b border-[#303635] pb-3 mb-4">
+                <span className="text-xs font-mono text-[#f31e39] uppercase">
+                  3D SURFACE RELIEF BENCH
+                </span>
+                <span className="text-xs font-mono text-[#f0ede4]">
+                  {selectedService.reliefLabel}
                 </span>
               </div>
-            </a>
-          </Reveal>
-        ))}
-      </div>
 
-      <div className="mt-6 h-px bg-line lg:hidden" aria-hidden>
-        <div
-          className="h-full w-1/3 bg-brand transition-transform duration-150"
-          style={{ transform: `translateX(${progress * 200}%)` }}
-        />
+              <div className="relative h-[300px] sm:h-[340px] w-full rounded-xl bg-[#111515] border border-[#303635] overflow-hidden">
+                {isVisible && (
+                  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 4.2], fov: 42 }}>
+                    <ambientLight intensity={0.75} />
+                    <directionalLight position={[4, 5, 4]} intensity={1.4} color="#f0ede4" />
+                    <pointLight position={[-3, -2, 3]} intensity={1.1} color="#f31e39" />
+                    <ServiceReliefMesh3D serviceId={selectedService.id} />
+                  </Canvas>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-[#171b1a] border border-[#303635] p-4">
+              <div className="text-xs font-mono text-[#afb2ac]">
+                SELECTED SERVICE SPECIFICATION
+              </div>
+              <div className="text-lg font-medium text-[#f0ede4] mt-1">
+                {selectedService.title} — {selectedService.subtitle}
+              </div>
+              <a
+                href="#sample-cta"
+                className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#f31e39] hover:bg-[#d5142c] text-[#f0ede4] font-mono text-xs uppercase tracking-wider py-3 transition-colors"
+              >
+                Request {selectedService.title} Sample
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

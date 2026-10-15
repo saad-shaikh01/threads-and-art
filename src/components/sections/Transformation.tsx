@@ -1,169 +1,292 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useScrollProgress } from "@/hooks/useScrollProgress";
-import { useProgressEffect } from "@/hooks/useProgressEffect";
-import { ArrowDown } from "@/components/ui/Icons";
-import { stages } from "@/lib/content";
+import React, { useState, useRef, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
-const clamp = (x: number) => Math.min(1, Math.max(0, x));
+interface StageSpec {
+  id: number;
+  code: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  metrics: { label: string; value: string }[];
+}
 
-/**
- * Pinned scroll scene: the TA monogram morphs artwork → stitch paths →
- * digitized preview → finished embroidery. Scroll progress writes CSS
- * variables straight onto the section (see `.tf-*` in globals.css), so React
- * only re-renders when the active stage changes.
- */
-export function Transformation() {
-  const trackRef = useRef<HTMLElement>(null);
-  const [phase, setPhase] = useState(0);
-  const { progressRef } = useScrollProgress({ containerRef: trackRef });
+const STAGES: StageSpec[] = [
+  {
+    id: 0,
+    code: "01 / INPUT",
+    title: "Original Artwork",
+    subtitle: "Raster, Sketch, or Flat Vector Intake",
+    description:
+      "We inspect your client's raw PNG, JPEG, AI, or PDF artwork—identifying micro-lettering, gradient transitions, and garment fabric constraints before plotting a single stitch.",
+    metrics: [
+      { label: "Source Formats", value: "PNG / JPG / AI / PDF" },
+      { label: "Min Lettering Check", value: "4.0mm Height Verified" },
+      { label: "Color Separation", value: "Pantone / Madeira Thread Match" },
+    ],
+  },
+  {
+    id: 1,
+    code: "02 / PATHING",
+    title: "Stitch Paths & Underlay",
+    subtitle: "Manual Bezier Nodes & Structural Underlay",
+    description:
+      "Edge-run, center-walk, and double-zigzag underlays are mapped manually to anchor the fabric to the backing, preventing puckering and registration drift at high machine speeds.",
+    metrics: [
+      { label: "Underlay Architecture", value: "Edge-Run + Tatami Lattice" },
+      { label: "Pull Compensation", value: "+0.25mm to +0.40mm" },
+      { label: "Trim Optimization", value: "Shortest-Path Routing" },
+    ],
+  },
+  {
+    id: 2,
+    code: "03 / SIMULATION",
+    title: "Digitized Stitch Preview",
+    subtitle: "Directional Satin Angles & Density Calibration",
+    description:
+      "Every stitch angle is tuned so light reflects uniformly across curves and corners. Lock-stitches and tie-ins are verified to prevent unraveling during industrial wash cycles.",
+    metrics: [
+      { label: "Satin Density", value: "0.38mm – 0.42mm" },
+      { label: "Tie-Off Security", value: "Double Lock-Stitch" },
+      { label: "Total Stitch Count", value: "14,820 Stitches" },
+    ],
+  },
+  {
+    id: 3,
+    code: "04 / PRODUCTION",
+    title: "Finished Embroidery",
+    subtitle: "100% Machine-Ready Commercial Output",
+    description:
+      "Delivered in your exact machine format (DST, PES, EMB, EXP, and more) with a complete production worksheet detailing thread sequence, needle stops, and hoop sizing.",
+    metrics: [
+      { label: "Machine Speed Rating", value: "1,000+ SPM Tested" },
+      { label: "Thread Breaks", value: "Zero-Break Pathing" },
+      { label: "Turnaround Window", value: "4–6 Hours Standard" },
+    ],
+  },
+];
 
-  useProgressEffect(progressRef, (p) => {
-    const el = trackRef.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setPhase(3);
-      return;
+interface ExplodedStackProps {
+  activeStage: number;
+  explosion: number;
+}
+
+function ExplodedLayerStack3D({ activeStage, explosion }: ExplodedStackProps) {
+  const stackRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (stackRef.current) {
+      stackRef.current.rotation.y = Math.sin(t * 0.35) * 0.35 + 0.55;
+      stackRef.current.rotation.x = 0.48;
     }
-    setPhase(Math.min(3, Math.floor(p * 4)));
-    const s = el.style;
-    s.setProperty("--original-opacity", String(1 - clamp((p - 0.18) / 0.1)));
-    s.setProperty("--paths-opacity", String(clamp((p - 0.17) / 0.08) * (1 - clamp((p - 0.48) / 0.12))));
-    s.setProperty("--outline-offset", String(1400 * (1 - clamp((p - 0.2) / 0.22))));
-    s.setProperty("--path-offset", String(1400 * (1 - clamp((p - 0.25) / 0.24))));
-    s.setProperty("--digitized-opacity", String(clamp((p - 0.48) / 0.13) * (1 - clamp((p - 0.73) / 0.12))));
-    s.setProperty("--finished-opacity", String(clamp((p - 0.73) / 0.16)));
-    s.setProperty("--fabric-opacity", String(clamp((p - 0.68) / 0.18)));
-    s.setProperty("--progress", `${p * 100}%`);
   });
+
+  const spacing = 0.25 + (explosion / 100) * 0.65;
+
+  return (
+    <group ref={stackRef}>
+      {[0, 1, 2, 3].map((idx) => {
+        const yPos = (idx - 1.5) * spacing;
+        const isSelected = activeStage === idx;
+        return (
+          <group key={idx} position={[0, yPos, 0]}>
+            {/* Base Plane */}
+            <mesh>
+              <boxGeometry args={[2.5, 0.06, 1.75]} />
+              <meshStandardMaterial
+                color={isSelected ? "#222a26" : "#191d1d"}
+                emissive={isSelected ? "#541a24" : "#000000"}
+                emissiveIntensity={isSelected ? 0.55 : 0}
+                metalness={0.5}
+                roughness={0.35}
+              />
+            </mesh>
+
+            {/* Layer Specific 3D Geometry */}
+            {idx === 0 && (
+              <mesh position={[0, 0.045, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[0.35, 0.65, 32]} />
+                <meshBasicMaterial color="#afb2ac" side={THREE.DoubleSide} />
+              </mesh>
+            )}
+
+            {idx === 1 && (
+              <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[0.52, 0.03, 12, 36]} />
+                <meshBasicMaterial color="#f31e39" wireframe />
+              </mesh>
+            )}
+
+            {idx === 2 && (
+              <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <torusKnotGeometry args={[0.42, 0.08, 64, 12, 2, 3]} />
+                <meshStandardMaterial color="#f0ede4" wireframe />
+              </mesh>
+            )}
+
+            {idx === 3 && (
+              <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[0.52, 0.14, 24, 64]} />
+                <meshStandardMaterial
+                  color="#f31e39"
+                  emissive="#541a24"
+                  emissiveIntensity={0.4}
+                  roughness={0.25}
+                />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+export default function Transformation() {
+  const [activeStage, setActiveStage] = useState<number>(3);
+  const [explosion, setExplosion] = useState<number>(75);
+  const [isVisible, setIsVisible] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const current = STAGES[activeStage];
 
   return (
     <section
-      ref={trackRef}
+      ref={sectionRef}
       id="transformation"
-      aria-label="Artwork to finished stitch demonstration"
-      className="relative h-[240vh] border-b border-line bg-[radial-gradient(ellipse_at_75%_50%,#2a302a80,transparent_65%),#121716] motion-reduce:h-auto max-md:h-[230vh]"
+      className="relative w-full bg-[#171b1a] text-[#f0ede4] py-20 md:py-28 border-b border-[#303635]"
     >
-      <div className="section-x sticky top-(--header-h) grid min-h-[calc(100svh-var(--header-h))] items-center gap-3 py-8 motion-reduce:static motion-reduce:min-h-0 motion-reduce:py-16 lg:grid-cols-[1fr_1.3fr] lg:gap-16 lg:py-14">
-        <div>
-          <p className="eyebrow mb-4">The transformation</p>
-          <h2 className="heading-2 text-[clamp(1.8rem,1.2rem+2.2vw,2.75rem)]">
-            One design.
-            <br />
-            <em className="text-accent">
-              A thousand
-              <br className="max-md:hidden" /> considered stitches.
-            </em>
-          </h2>
-          <p className="mt-4 max-w-xs text-sm text-muted max-md:mt-2 max-md:text-xs">
-            Your artwork becomes a carefully planned stitch file, then embroidery you can see and feel.
-          </p>
-
-          <ol className="mt-5 grid grid-cols-4 gap-2 md:mt-8 md:grid-cols-1 md:gap-5">
-            {stages.map((s, i) => (
-              <li
-                key={s.title}
-                className={`flex flex-col gap-2 transition-opacity duration-300 motion-reduce:opacity-100 md:flex-row md:items-center md:gap-4 ${
-                  i === phase ? "opacity-100" : "opacity-35"
-                }`}
-              >
-                <span
-                  className={`grid size-8 shrink-0 place-items-center rounded-full border text-[11px] transition-colors ${
-                    i === phase ? "border-brand text-brand" : "border-[#59615b]"
-                  }`}
-                >
-                  0{i + 1}
-                </span>
-                <div className="text-[10px] leading-snug md:text-sm">
-                  {s.title}
-                  <small className="hidden text-xs text-muted md:block">{s.note}</small>
-                </div>
-              </li>
-            ))}
-          </ol>
-
-          <p className="mt-8 hidden items-center gap-2 text-[9px] tracking-[0.2em] text-muted motion-reduce:hidden md:flex">
-            SCROLL TO FOLLOW THE THREAD <ArrowDown className="size-3 animate-float" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <div className="text-xs font-mono uppercase tracking-widest text-[#f31e39] mb-2">
+              01 / STITCH ARCHITECTURE TRANSFORMATION
+            </div>
+            <h2
+              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              className="text-3xl sm:text-4xl md:text-5xl font-normal text-[#f0ede4]"
+            >
+              From Flat Artwork to Dimensional Thread
+            </h2>
+          </div>
+          <p className="max-w-md text-sm sm:text-base text-[#afb2ac]">
+            Inspect how our digitizers deconstruct raw artwork into four engineered layers of underlay, directional pathing, and high-lustre embroidery.
           </p>
         </div>
 
-        <div className="min-w-0">
-          <svg
-            viewBox="0 0 600 450"
-            role="img"
-            aria-label="Illustrative TA monogram transitioning from artwork to embroidery"
-            className="mx-auto block w-full max-md:max-h-[35svh] lg:drop-shadow-[0_30px_60px_rgb(0_0_0/0.5)]"
-          >
-            <defs>
-              <pattern id="stitch-texture" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
-                <path d="M0 1H5" stroke="#fff3dc" strokeWidth="1.4" />
-                <path d="M0 3H5" stroke="#78202d" strokeWidth="1" />
-              </pattern>
-              <pattern id="fabric" width="6" height="6" patternUnits="userSpaceOnUse">
-                <path d="M0 0H6M0 0V6" stroke="#383d37" strokeWidth=".5" />
-              </pattern>
-              <filter id="thread-shadow">
-                <feDropShadow dx="1" dy="3" stdDeviation="1.5" floodColor="#000" floodOpacity=".9" />
-              </filter>
-              <g id="monogram">
-                <path d="M139 118H329L315 155H260L211 326H164L213 155H128Z" />
-                <path
-                  d="M328 127H366L420 326H373L362 278H303L277 326H232ZM324 242H354L343 184Z"
-                  fillRule="evenodd"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left 7 Columns: 3D Exploded Isometric Layer Stack */}
+          <div className="lg:col-span-7 rounded-2xl border border-[#303635] bg-[#191d1d] p-4 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[#303635]">
+              <div className="text-xs font-mono text-[#afb2ac]">
+                ACTIVE LAYER:{" "}
+                <span className="text-[#f31e39] font-semibold">
+                  {current.code} — {current.title.toUpperCase()}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor="explosion-range"
+                  className="text-xs font-mono text-[#afb2ac]"
+                >
+                  3D LAYER SEPARATION: {explosion}%
+                </label>
+                <input
+                  id="explosion-range"
+                  type="range"
+                  min={15}
+                  max={100}
+                  value={explosion}
+                  onChange={(e) => setExplosion(Number(e.target.value))}
+                  className="w-28 sm:w-36 accent-[#f31e39] cursor-pointer"
                 />
-              </g>
-            </defs>
+              </div>
+            </div>
 
-            <rect className="tf-fabric" x="40" y="40" width="520" height="370" rx="18" fill="#202722" />
-            <rect className="tf-fabric" x="40" y="40" width="520" height="370" rx="18" fill="url(#fabric)" />
+            <div className="relative h-[320px] sm:h-[380px] w-full rounded-xl bg-[#111515] border border-[#303635] overflow-hidden">
+              {isVisible && (
+                <Canvas dpr={[1, 1.5]} camera={{ position: [0, 1.2, 4.6], fov: 40 }}>
+                  <ambientLight intensity={0.75} />
+                  <directionalLight position={[5, 6, 4]} intensity={1.3} color="#f0ede4" />
+                  <pointLight position={[-4, 2, 3]} intensity={1.0} color="#f31e39" />
+                  <ExplodedLayerStack3D activeStage={activeStage} explosion={explosion} />
+                </Canvas>
+              )}
+            </div>
 
-            <g className="tf-original">
-              <use href="#monogram" fill="#ef233d" />
-            </g>
+            {/* 4-Stage Quick Selector Pills */}
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {STAGES.map((stg) => (
+                <button
+                  key={stg.id}
+                  type="button"
+                  onClick={() => setActiveStage(stg.id)}
+                  className={`rounded-xl p-3 text-left transition-all border ${
+                    activeStage === stg.id
+                      ? "bg-[#222a26] border-[#f31e39] shadow-[0_0_20px_rgba(243,30,57,0.2)]"
+                      : "bg-[#111515] border-[#303635] hover:border-[#afb2ac]"
+                  }`}
+                >
+                  <div className="text-[11px] font-mono text-[#f31e39]">
+                    {stg.code}
+                  </div>
+                  <div className="text-xs sm:text-sm font-medium text-[#f0ede4] mt-1 truncate">
+                    {stg.title}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
 
-            <g className="tf-paths" fill="none" stroke="#f23b4d" strokeWidth="1.5">
-              <use href="#monogram" />
-              <path
-                className="tf-stitch"
-                d="M135 140H310M145 146H306M194 318L242 159M203 318L249 159M286 309L336 162L376 307M295 270H358M300 259H356M296 294L348 171L384 316"
-              />
-              <path
-                className="tf-stitch"
-                d="M110 345H443M110 105V345M443 105V345"
-                stroke="#69716b"
-                strokeDasharray="4 5"
-              />
-            </g>
+          {/* Right 5 Columns: Selected Stage Telemetry & Specification Card */}
+          <div className="lg:col-span-5 space-y-5">
+            <div className="rounded-2xl border border-[#303635] bg-[#191d1d] p-6 sm:p-8">
+              <div className="inline-block rounded bg-[#541a24] px-2.5 py-1 text-xs font-mono text-[#f0ede4]">
+                {current.code}
+              </div>
+              <h3
+                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                className="text-2xl sm:text-3xl text-[#f0ede4] mt-3"
+              >
+                {current.title}
+              </h3>
+              <p className="text-xs font-mono uppercase tracking-wider text-[#f31e39] mt-1">
+                {current.subtitle}
+              </p>
+              <p className="text-sm sm:text-base text-[#afb2ac] leading-relaxed mt-4">
+                {current.description}
+              </p>
 
-            <g className="tf-digitized">
-              <use href="#monogram" fill="#ef233d" stroke="#f9c2b3" strokeWidth=".7" />
-              <use href="#monogram" fill="url(#stitch-texture)" opacity=".65" />
-            </g>
-
-            <g className="tf-finished" filter="url(#thread-shadow)">
-              <use href="#monogram" fill="#e3213c" stroke="#f24959" strokeWidth="3" />
-              <use href="#monogram" fill="url(#stitch-texture)" />
-              <path
-                d="M135 345C200 379 387 375 444 339"
-                fill="none"
-                stroke="#c9bb9b"
-                strokeWidth="3"
-                strokeDasharray="2 3"
-              />
-            </g>
-
-            <text x="300" y="387" textAnchor="middle" fill="#c2c6bd" fontSize="9" letterSpacing="3">
-              THREADS &amp; ARTS / ILLUSTRATIVE DESIGN
-            </text>
-          </svg>
-
-          <div className="mt-3 flex items-center justify-between text-[8px] tracking-[0.15em] text-muted md:px-[7%] md:text-[9px]">
-            <span>
-              0{phase + 1} / {stages[phase].label}
-            </span>
-            <div className="h-0.5 w-[35%] bg-line">
-              <i className="block h-full w-(--progress,0%) bg-brand" />
+              <div className="mt-6 pt-6 border-t border-[#303635] space-y-3">
+                {current.metrics.map((m) => (
+                  <div
+                    key={m.label}
+                    className="flex items-center justify-between rounded-lg bg-[#111515] px-4 py-3 border border-[#303635]/70"
+                  >
+                    <span className="text-xs font-mono text-[#afb2ac]">
+                      {m.label}
+                    </span>
+                    <span className="text-xs sm:text-sm font-mono font-semibold text-[#f0ede4]">
+                      {m.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
