@@ -5,17 +5,20 @@
  * only this file.
  */
 
-/** Total number of frames in the sequence (frames/0001.webp ... 0480.webp). */
-export const TOTAL_FRAMES = 480;
+/** Total number of frames in the sequence (frames/ezgif-frame-001.png ... 050.png). */
+export const TOTAL_FRAMES = 50;
 
 /** Folder (relative to /public) where numbered frames live. */
 export const FRAME_PATH = "/frames";
 
-/** File extension of each frame image, matching the exported sequence. */
-export const IMAGE_FORMAT = "webp";
+/** Filename prefix before the zero-padded frame number. */
+export const FRAME_PREFIX = "ezgif-frame-";
 
-/** Zero-padding width used in frame filenames (4 -> "0001"). */
-export const FRAME_NUMBER_PADDING = 4;
+/** File extension of each frame image, matching the exported sequence. */
+export const IMAGE_FORMAT = "png";
+
+/** Zero-padding width used in frame filenames (3 -> "001"). */
+export const FRAME_NUMBER_PADDING = 3;
 
 /**
  * How long the section stays pinned while scrolling, in viewport heights.
@@ -35,10 +38,10 @@ export const PRELOAD_CONCURRENCY = 6;
 
 /**
  * Builds the public URL for a given 0-based frame index, e.g.
- * getFrameUrl(0) -> "/frames/0001.webp".
+ * getFrameUrl(0) -> "/frames/ezgif-frame-001.png".
  */
 export function getFrameUrl(frameIndex: number): string {
   const frameNumber = frameIndex + 1;
   const padded = String(frameNumber).padStart(FRAME_NUMBER_PADDING, "0");
-  return `${FRAME_PATH}/${padded}.${IMAGE_FORMAT}`;
+  return `${FRAME_PATH}/${FRAME_PREFIX}${padded}.${IMAGE_FORMAT}`;
 }
