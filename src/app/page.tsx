@@ -1,16 +1,33 @@
-import { ScrollSequenceSection } from "@/components/scroll-sequence";
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
+import { About } from "@/components/sections/About";
+import { FrameStory } from "@/components/sections/FrameStory";
+import { Hero } from "@/components/sections/Hero";
+import { Industries } from "@/components/sections/Industries";
+import { Portfolio } from "@/components/sections/Portfolio";
+import { Process } from "@/components/sections/Process";
+import { PromiseBar } from "@/components/sections/PromiseBar";
+import { SampleCta } from "@/components/sections/SampleCta";
+import { Services } from "@/components/sections/Services";
+import { Transformation } from "@/components/sections/Transformation";
 
-/**
- * Minimal host page: just proves the section pins, plays, and unpins
- * correctly inside normal page scroll. The blank spacers above/below are
- * scaffolding for this demo only — they are not part of the component.
- */
 export default function Home() {
   return (
-    <main>
-      <div className="h-screen bg-neutral-950" />
-      <ScrollSequenceSection />
-      <div className="h-screen bg-neutral-950" />
-    </main>
+    <>
+      <Header />
+      <main>
+        <Hero />
+        <PromiseBar />
+        <Transformation />
+        <Services />
+        <FrameStory />
+        <Portfolio />
+        <Process />
+        <About />
+        <Industries />
+        <SampleCta />
+      </main>
+      <Footer />
+    </>
   );
 }

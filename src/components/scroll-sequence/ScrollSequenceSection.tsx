@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type ReactNode, type RefObject } from "react";
 import { FrameCanvas } from "./FrameCanvas";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useFrameSequence } from "@/hooks/useFrameSequence";
@@ -14,6 +14,8 @@ export interface ScrollSequenceSectionProps {
   /** "cover" fills and crops; "contain" letterboxes to show the full frame. */
   fitMode?: CanvasFitMode;
   className?: string;
+  /** Optional UI layered over the canvas; receives the live progress ref. */
+  overlay?: (progressRef: RefObject<number>) => ReactNode;
 }
 
 /**
@@ -34,6 +36,7 @@ export function ScrollSequenceSection({
   scrollDuration = SCROLL_DURATION,
   fitMode = CANVAS_FIT_MODE,
   className,
+  overlay,
 }: ScrollSequenceSectionProps) {
   const trackRef = useRef<HTMLElement | null>(null);
   const { progressRef } = useScrollProgress({ containerRef: trackRef });
@@ -51,6 +54,7 @@ export function ScrollSequenceSection({
           getFrameForProgress={getFrameForProgress}
           fitMode={fitMode}
         />
+        {overlay?.(progressRef)}
       </div>
     </section>
   );

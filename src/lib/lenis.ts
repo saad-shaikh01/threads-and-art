@@ -22,7 +22,11 @@ function tick(time: number) {
 /** Acquire a reference to the shared Lenis instance, creating it on first use. */
 export function acquireLenis(): Lenis {
   if (!instance) {
-    instance = new Lenis({ autoRaf: false });
+    // `anchors` lets in-page #links glide through Lenis (offset = sticky header).
+    instance = new Lenis({
+      autoRaf: false,
+      anchors: { offset: -(window.innerWidth >= 768 ? 94 : 76) },
+    });
     rafId = requestAnimationFrame(tick);
   }
   refCount += 1;
