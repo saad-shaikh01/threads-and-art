@@ -128,6 +128,14 @@ export const stats = [
   { value: 50000, label: "Designs delivered", plus: true, format: true },
 ] as const;
 
+export const reasons = [
+  { num: "01", title: "Fast Turnaround", icon: "clock", rotate: -3, dark: true },
+  { num: "02", title: "Unlimited Revisions", icon: "loop", rotate: 2.5, dark: false },
+  { num: "03", title: "All Major Formats", icon: "layers", rotate: 1, dark: false },
+  { num: "04", title: "Expert Digitizers", icon: "badge", rotate: -2, dark: true },
+  { num: "05", title: "50,000+ Designs", icon: "check", rotate: 3, dark: true },
+] as const;
+
 export const industries = [
   { title: "Embroidery Shops", text: "A reliable partner for your next production run." },
   { title: "Screen Printers", text: "Sharp vector artwork, ready for your workflow." },
