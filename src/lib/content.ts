@@ -76,17 +76,42 @@ export const portfolio = [
   {
     image: "/assets/work1.jpg",
     alt: "Embroidery portfolio sample one",
-    caption: "Embroidery sample · Existing Threads & Arts portfolio",
+    caption: "Logo Digitizing · Satin Column",
   },
   {
     image: "/assets/work2.jpg",
     alt: "Embroidery portfolio sample two",
-    caption: "Embroidery sample · Existing Threads & Arts portfolio",
+    caption: "Custom Crest · Tatami Fill",
   },
   {
     image: "/assets/cap.jpg",
     alt: "Detailed cap embroidery",
-    caption: "Cap embroidery · Existing Threads & Arts portfolio",
+    caption: "Cap Embroidery · Curved Surface",
+  },
+  {
+    image: "/assets/work4.jpg",
+    alt: "3D puff embroidery lettering",
+    caption: "3D Puff · Foam Lettering",
+  },
+  {
+    image: "/assets/work5.jpg",
+    alt: "Embroidered patch badge",
+    caption: "Patch Digitizing · Merrowed Edge",
+  },
+  {
+    image: "/assets/work6.jpg",
+    alt: "Detailed jacket back embroidery",
+    caption: "Jacket Back · Large Format",
+  },
+  {
+    image: "/assets/work7.jpg",
+    alt: "Embroidered polo logo",
+    caption: "Left Chest · Corporate Logo",
+  },
+  {
+    image: "/assets/work8.jpg",
+    alt: "Intricate embroidery design with fine detail",
+    caption: "Fine Detail · Micro Lettering",
   },
 ] as const;
 
