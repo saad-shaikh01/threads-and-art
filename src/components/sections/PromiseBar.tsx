@@ -1,44 +1,50 @@
-import { Badge, Bolt, Infinity, Layers } from "@/components/ui/Icons";
+"use client";
+
 import { Reveal } from "@/components/ui/Reveal";
-import { formats, promises } from "@/lib/content";
+import { Badge, Bolt, Infinity, Layers } from "@/components/ui/Icons";
+import { promises } from "@/lib/content";
 
 const icons = { bolt: Bolt, infinity: Infinity, layers: Layers, badge: Badge } as const;
 
 export function PromiseBar() {
   return (
-    <>
-      <div className="section-x grid grid-cols-2 gap-x-5 gap-y-6 border-b border-line py-7 lg:grid-cols-4 lg:gap-6">
-        {promises.map((p, i) => {
-          const Icon = icons[p.icon];
-          return (
-            <Reveal key={p.title} delay={i * 0.08} className="group flex items-center gap-3 lg:gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-brand transition-colors group-hover:border-brand group-hover:bg-brand/10 lg:size-12">
-                <Icon className="size-5 lg:size-6" />
-              </span>
-              <p className="text-xs font-medium text-ivory lg:text-sm">
-                {p.title}
-                <small className="block text-[10px] font-normal text-muted lg:text-xs">{p.note}</small>
-              </p>
-            </Reveal>
-          );
-        })}
-      </div>
+    <section className="relative overflow-hidden border-b border-line bg-panel">
+      <div className="absolute inset-0 fabric-texture opacity-20" aria-hidden />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-20 top-1/2 -translate-y-1/2 h-75 w-75 rounded-full bg-brand/6 blur-[100px]"
+      />
 
-      {/* Supported machine formats — endless marquee */}
-      <div className="overflow-hidden border-b border-line bg-deep py-4" aria-label="Supported file formats">
-        <div className="flex w-max animate-marquee items-center hover:[animation-play-state:paused]">
-          {[0, 1].map((dup) => (
-            <ul key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
-              {formats.map((f) => (
-                <li key={f} className="flex items-center font-mono text-xs tracking-[0.25em] text-muted">
-                  <span className="px-8">.{f}</span>
-                  <span className="size-1 rounded-full bg-brand" />
-                </li>
-              ))}
-            </ul>
-          ))}
+      <div className="section-x relative z-10 py-6 md:py-0">
+        <div className="grid grid-cols-2 lg:grid-cols-4">
+          {promises.map((p, i) => {
+            const Icon = icons[p.icon];
+            const isLast = i === promises.length - 1;
+            return (
+              <Reveal
+                key={p.title}
+                delay={i * 0.08}
+                className={`group flex items-center gap-4 py-5 md:py-7 lg:justify-center ${
+                  !isLast ? "border-b border-line/50 lg:border-b-0 lg:border-r" : ""
+                } ${i === 1 ? "border-b border-line/50 lg:border-b-0" : ""}`}
+              >
+                <span className="relative grid size-12 shrink-0 place-items-center rounded-xl border border-line bg-deep text-brand transition-all duration-300 group-hover:border-brand group-hover:shadow-[0_0_20px_rgba(243,30,57,0.15)] lg:size-14">
+                  <Icon className="size-5 lg:size-6" />
+                  <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-brand opacity-0 transition-opacity group-hover:opacity-100" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-ivory lg:text-base">
+                    {p.title}
+                  </p>
+                  <p className="text-[11px] text-muted lg:text-xs">
+                    {p.note}
+                  </p>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
-    </>
+    </section>
   );
 }

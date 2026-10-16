@@ -1,292 +1,245 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+import Image from "next/image";
+import { useRef, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Reveal } from "@/components/ui/Reveal";
+import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { useProgressEffect } from "@/hooks/useProgressEffect";
 
-interface StageSpec {
-  id: number;
-  code: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  metrics: { label: string; value: string }[];
-}
-
-const STAGES: StageSpec[] = [
+const STAGES = [
   {
-    id: 0,
-    code: "01 / INPUT",
+    code: "01",
+    tag: "INPUT",
     title: "Original Artwork",
-    subtitle: "Raster, Sketch, or Flat Vector Intake",
     description:
-      "We inspect your client's raw PNG, JPEG, AI, or PDF artwork—identifying micro-lettering, gradient transitions, and garment fabric constraints before plotting a single stitch.",
-    metrics: [
-      { label: "Source Formats", value: "PNG / JPG / AI / PDF" },
-      { label: "Min Lettering Check", value: "4.0mm Height Verified" },
-      { label: "Color Separation", value: "Pantone / Madeira Thread Match" },
-    ],
+      "We inspect your raw PNG, JPEG, AI, or PDF artwork — identifying micro-lettering, gradient transitions, and fabric constraints before plotting a single stitch.",
+    image: "/assets/tf-artwork.jpg",
+    specs: ["PNG / JPG / AI / PDF", "4.0mm Min Lettering", "Pantone Thread Match"],
   },
   {
-    id: 1,
-    code: "02 / PATHING",
+    code: "02",
+    tag: "PATHING",
     title: "Stitch Paths & Underlay",
-    subtitle: "Manual Bezier Nodes & Structural Underlay",
     description:
-      "Edge-run, center-walk, and double-zigzag underlays are mapped manually to anchor the fabric to the backing, preventing puckering and registration drift at high machine speeds.",
-    metrics: [
-      { label: "Underlay Architecture", value: "Edge-Run + Tatami Lattice" },
-      { label: "Pull Compensation", value: "+0.25mm to +0.40mm" },
-      { label: "Trim Optimization", value: "Shortest-Path Routing" },
-    ],
+      "Edge-run, center-walk, and double-zigzag underlays are mapped by hand to anchor fabric to backing — preventing puckering and drift at high machine speeds.",
+    image: "/assets/tf-pathing.jpg",
+    specs: ["Edge-Run + Tatami Lattice", "+0.25mm Pull Comp", "Shortest-Path Trims"],
   },
   {
-    id: 2,
-    code: "03 / SIMULATION",
-    title: "Digitized Stitch Preview",
-    subtitle: "Directional Satin Angles & Density Calibration",
+    code: "03",
+    tag: "SIMULATION",
+    title: "Digitized Preview",
     description:
-      "Every stitch angle is tuned so light reflects uniformly across curves and corners. Lock-stitches and tie-ins are verified to prevent unraveling during industrial wash cycles.",
-    metrics: [
-      { label: "Satin Density", value: "0.38mm – 0.42mm" },
-      { label: "Tie-Off Security", value: "Double Lock-Stitch" },
-      { label: "Total Stitch Count", value: "14,820 Stitches" },
-    ],
+      "Every stitch angle is tuned so light reflects uniformly across curves and corners. Lock-stitches and tie-ins are verified to survive industrial wash cycles.",
+    image: "/assets/tf-preview.jpg",
+    specs: ["0.38–0.42mm Density", "Double Lock-Stitch", "14,820 Stitches"],
   },
   {
-    id: 3,
-    code: "04 / PRODUCTION",
+    code: "04",
+    tag: "PRODUCTION",
     title: "Finished Embroidery",
-    subtitle: "100% Machine-Ready Commercial Output",
     description:
-      "Delivered in your exact machine format (DST, PES, EMB, EXP, and more) with a complete production worksheet detailing thread sequence, needle stops, and hoop sizing.",
-    metrics: [
-      { label: "Machine Speed Rating", value: "1,000+ SPM Tested" },
-      { label: "Thread Breaks", value: "Zero-Break Pathing" },
-      { label: "Turnaround Window", value: "4–6 Hours Standard" },
-    ],
+      "Delivered in your exact machine format with a production worksheet detailing thread sequence, needle stops, and hoop sizing. Ready for 1,000+ SPM.",
+    image: "/assets/tf-finished.jpg",
+    specs: ["1,000+ SPM Tested", "Zero-Break Pathing", "4–6 Hour Turnaround"],
   },
 ];
 
-interface ExplodedStackProps {
-  activeStage: number;
-  explosion: number;
-}
-
-function ExplodedLayerStack3D({ activeStage, explosion }: ExplodedStackProps) {
-  const stackRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (stackRef.current) {
-      stackRef.current.rotation.y = Math.sin(t * 0.35) * 0.35 + 0.55;
-      stackRef.current.rotation.x = 0.48;
-    }
-  });
-
-  const spacing = 0.25 + (explosion / 100) * 0.65;
-
-  return (
-    <group ref={stackRef}>
-      {[0, 1, 2, 3].map((idx) => {
-        const yPos = (idx - 1.5) * spacing;
-        const isSelected = activeStage === idx;
-        return (
-          <group key={idx} position={[0, yPos, 0]}>
-            {/* Base Plane */}
-            <mesh>
-              <boxGeometry args={[2.5, 0.06, 1.75]} />
-              <meshStandardMaterial
-                color={isSelected ? "#222a26" : "#191d1d"}
-                emissive={isSelected ? "#541a24" : "#000000"}
-                emissiveIntensity={isSelected ? 0.55 : 0}
-                metalness={0.5}
-                roughness={0.35}
-              />
-            </mesh>
-
-            {/* Layer Specific 3D Geometry */}
-            {idx === 0 && (
-              <mesh position={[0, 0.045, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <ringGeometry args={[0.35, 0.65, 32]} />
-                <meshBasicMaterial color="#afb2ac" side={THREE.DoubleSide} />
-              </mesh>
-            )}
-
-            {idx === 1 && (
-              <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <torusGeometry args={[0.52, 0.03, 12, 36]} />
-                <meshBasicMaterial color="#f31e39" wireframe />
-              </mesh>
-            )}
-
-            {idx === 2 && (
-              <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <torusKnotGeometry args={[0.42, 0.08, 64, 12, 2, 3]} />
-                <meshStandardMaterial color="#f0ede4" wireframe />
-              </mesh>
-            )}
-
-            {idx === 3 && (
-              <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <torusGeometry args={[0.52, 0.14, 24, 64]} />
-                <meshStandardMaterial
-                  color="#f31e39"
-                  emissive="#541a24"
-                  emissiveIntensity={0.4}
-                  roughness={0.25}
-                />
-              </mesh>
-            )}
-          </group>
-        );
-      })}
-    </group>
-  );
-}
+const SCROLL_DURATION = 3;
 
 export default function Transformation() {
-  const [activeStage, setActiveStage] = useState<number>(3);
-  const [explosion, setExplosion] = useState<number>(75);
-  const [isVisible, setIsVisible] = useState(true);
-  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLElement>(null);
+  const { progressRef } = useScrollProgress({ containerRef: trackRef });
 
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.05 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const [active, setActive] = useState(0);
+  const [barWidth, setBarWidth] = useState("0%");
 
-  const current = STAGES[activeStage];
+  useProgressEffect(progressRef, (p) => {
+    const stageIndex = Math.min(STAGES.length - 1, Math.floor(p * STAGES.length));
+    setActive(stageIndex);
+    setBarWidth(`${Math.min(100, p * 100)}%`);
+  });
+
+  const handleTabClick = useCallback(
+    (index: number) => {
+      setActive(index);
+      const el = trackRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const scrollableRange = rect.height - window.innerHeight;
+      const targetProgress = (index + 0.5) / STAGES.length;
+      const targetScroll = el.offsetTop + targetProgress * scrollableRange;
+      window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    },
+    [],
+  );
+
+  const current = STAGES[active];
 
   return (
     <section
-      ref={sectionRef}
+      ref={trackRef}
       id="transformation"
-      className="relative w-full bg-[#171b1a] text-[#f0ede4] py-20 md:py-28 border-b border-[#303635]"
+      style={{ height: `${(SCROLL_DURATION + 1) * 100}vh` }}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-[#f31e39] mb-2">
-              01 / STITCH ARCHITECTURE TRANSFORMATION
+      <div className="sticky top-0 h-screen w-full overflow-hidden border-b border-line bg-deep">
+        <div className="pointer-events-none absolute inset-0 fabric-texture opacity-15" aria-hidden />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-brand/8 blur-[160px]"
+        />
+
+        {/* ── Background image layer ── */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: [0.2, 0.7, 0.3, 1] }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={current.image}
+              alt={current.title}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority={active === 0}
+            />
+            <div className="absolute inset-0 bg-bg/65" />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-bg/30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-bg/80 via-transparent to-bg/50" />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* ── Content overlay ── */}
+        <div className="relative z-10 flex h-full flex-col">
+          {/* Top header */}
+          <div className="section-x flex items-end justify-between gap-4 pt-8 md:pt-12">
+            <div>
+              <p className="eyebrow mb-2">The Transformation</p>
+              <h2 className="heading-display text-[clamp(1.6rem,1rem+2.4vw,3rem)] max-w-lg">
+                From flat artwork to{" "}
+                <em className="text-accent">dimensional thread.</em>
+              </h2>
             </div>
-            <h2
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-              className="text-3xl sm:text-4xl md:text-5xl font-normal text-[#f0ede4]"
-            >
-              From Flat Artwork to Dimensional Thread
-            </h2>
+            <span className="hidden font-mono text-xs text-muted sm:block">
+              SCROLL TO EXPLORE
+            </span>
           </div>
-          <p className="max-w-md text-sm sm:text-base text-[#afb2ac]">
-            Inspect how our digitizers deconstruct raw artwork into four engineered layers of underlay, directional pathing, and high-lustre embroidery.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left 7 Columns: 3D Exploded Isometric Layer Stack */}
-          <div className="lg:col-span-7 rounded-2xl border border-[#303635] bg-[#191d1d] p-4 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[#303635]">
-              <div className="text-xs font-mono text-[#afb2ac]">
-                ACTIVE LAYER:{" "}
-                <span className="text-[#f31e39] font-semibold">
-                  {current.code} — {current.title.toUpperCase()}
-                </span>
+          {/* Main content area */}
+          <div className="section-x flex flex-1 items-center">
+            <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
+              {/* Left: stage info */}
+              <div className="lg:col-span-5 xl:col-span-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={active}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -16 }}
+                    transition={{ duration: 0.45, ease: [0.2, 0.7, 0.3, 1] }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[clamp(3rem,7vw,5rem)] font-bold leading-none text-brand/20">
+                        {current.code}
+                      </span>
+                      <span className="rounded-md bg-wine/50 px-2.5 py-1 text-[11px] font-mono text-ivory backdrop-blur-sm">
+                        {current.tag}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-3 font-display text-2xl text-ivory sm:text-3xl lg:text-4xl">
+                      {current.title}
+                    </h3>
+
+                    <p className="mt-4 max-w-md text-sm leading-relaxed text-muted sm:text-base">
+                      {current.description}
+                    </p>
+
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {current.specs.map((spec) => (
+                        <span
+                          key={spec}
+                          className="rounded-full border border-line/60 bg-bg/50 px-3 py-1.5 text-[11px] font-mono text-ivory/80 backdrop-blur-sm"
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               </div>
-              <div className="flex items-center gap-3">
-                <label
-                  htmlFor="explosion-range"
-                  className="text-xs font-mono text-[#afb2ac]"
-                >
-                  3D LAYER SEPARATION: {explosion}%
-                </label>
-                <input
-                  id="explosion-range"
-                  type="range"
-                  min={15}
-                  max={100}
-                  value={explosion}
-                  onChange={(e) => setExplosion(Number(e.target.value))}
-                  className="w-28 sm:w-36 accent-[#f31e39] cursor-pointer"
-                />
+
+              {/* Right: showcase image card */}
+              <div className="lg:col-span-7 xl:col-span-8">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={active}
+                    initial={{ opacity: 0, scale: 0.96, x: 30 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.98, x: -20 }}
+                    transition={{ duration: 0.5, ease: [0.2, 0.7, 0.3, 1] }}
+                    className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-line/40 shadow-2xl shadow-black/40"
+                  >
+                    <Image
+                      src={current.image}
+                      alt={current.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 90vw, 55vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-bg/40 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 right-4 rounded-lg border border-line/40 bg-bg/60 px-3 py-1.5 font-mono text-[11px] text-ivory backdrop-blur-sm sm:bottom-5 sm:right-5">
+                      {current.code} / 04
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
+          </div>
 
-            <div className="relative h-[320px] sm:h-[380px] w-full rounded-xl bg-[#111515] border border-[#303635] overflow-hidden">
-              {isVisible && (
-                <Canvas dpr={[1, 1.5]} camera={{ position: [0, 1.2, 4.6], fov: 40 }}>
-                  <ambientLight intensity={0.75} />
-                  <directionalLight position={[5, 6, 4]} intensity={1.3} color="#f0ede4" />
-                  <pointLight position={[-4, 2, 3]} intensity={1.0} color="#f31e39" />
-                  <ExplodedLayerStack3D activeStage={activeStage} explosion={explosion} />
-                </Canvas>
-              )}
-            </div>
-
-            {/* 4-Stage Quick Selector Pills */}
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {STAGES.map((stg) => (
+          {/* Bottom: tabs + progress bar */}
+          <div className="section-x pb-6 md:pb-8">
+            {/* Tab buttons */}
+            <div className="flex gap-1 sm:gap-2">
+              {STAGES.map((stg, i) => (
                 <button
-                  key={stg.id}
+                  key={stg.code}
                   type="button"
-                  onClick={() => setActiveStage(stg.id)}
-                  className={`rounded-xl p-3 text-left transition-all border ${
-                    activeStage === stg.id
-                      ? "bg-[#222a26] border-[#f31e39] shadow-[0_0_20px_rgba(243,30,57,0.2)]"
-                      : "bg-[#111515] border-[#303635] hover:border-[#afb2ac]"
+                  onClick={() => handleTabClick(i)}
+                  className={`group relative flex-1 rounded-t-lg py-3 text-center transition-colors sm:py-4 ${
+                    active === i
+                      ? "bg-panel/80 text-ivory backdrop-blur-sm"
+                      : "text-muted hover:text-ivory"
                   }`}
                 >
-                  <div className="text-[11px] font-mono text-[#f31e39]">
+                  <span className="block font-mono text-[10px] tracking-widest text-brand">
                     {stg.code}
-                  </div>
-                  <div className="text-xs sm:text-sm font-medium text-[#f0ede4] mt-1 truncate">
-                    {stg.title}
-                  </div>
+                  </span>
+                  <span className="mt-0.5 block text-[11px] font-medium sm:text-xs">
+                    {stg.tag}
+                  </span>
+                  {active === i && (
+                    <motion.span
+                      layoutId="tf-active-tab"
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-brand"
+                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                    />
+                  )}
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Right 5 Columns: Selected Stage Telemetry & Specification Card */}
-          <div className="lg:col-span-5 space-y-5">
-            <div className="rounded-2xl border border-[#303635] bg-[#191d1d] p-6 sm:p-8">
-              <div className="inline-block rounded bg-[#541a24] px-2.5 py-1 text-xs font-mono text-[#f0ede4]">
-                {current.code}
-              </div>
-              <h3
-                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-                className="text-2xl sm:text-3xl text-[#f0ede4] mt-3"
-              >
-                {current.title}
-              </h3>
-              <p className="text-xs font-mono uppercase tracking-wider text-[#f31e39] mt-1">
-                {current.subtitle}
-              </p>
-              <p className="text-sm sm:text-base text-[#afb2ac] leading-relaxed mt-4">
-                {current.description}
-              </p>
-
-              <div className="mt-6 pt-6 border-t border-[#303635] space-y-3">
-                {current.metrics.map((m) => (
-                  <div
-                    key={m.label}
-                    className="flex items-center justify-between rounded-lg bg-[#111515] px-4 py-3 border border-[#303635]/70"
-                  >
-                    <span className="text-xs font-mono text-[#afb2ac]">
-                      {m.label}
-                    </span>
-                    <span className="text-xs sm:text-sm font-mono font-semibold text-[#f0ede4]">
-                      {m.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            {/* Overall progress bar */}
+            <div className="mt-2 h-px w-full bg-line/40">
+              <div
+                className="h-full bg-brand transition-[width] duration-200 ease-out"
+                style={{ width: barWidth }}
+              />
             </div>
           </div>
         </div>
