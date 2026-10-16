@@ -74,42 +74,42 @@ export const services = [
 
 export const portfolio = [
   {
-    image: "/assets/work1.jpg",
-    alt: "Embroidery portfolio sample one",
+    image: "/assets/showcase/portfolio-logo.webp",
+    alt: "Embroidered logo digitizing sample",
     caption: "Logo Digitizing · Satin Column",
   },
   {
-    image: "/assets/work2.jpg",
-    alt: "Embroidery portfolio sample two",
+    image: "/assets/showcase/portfolio-crest.webp",
+    alt: "Custom embroidered crest with tatami fill",
     caption: "Custom Crest · Tatami Fill",
   },
   {
-    image: "/assets/cap.jpg",
-    alt: "Detailed cap embroidery",
+    image: "/assets/showcase/portfolio-cap.webp",
+    alt: "Detailed cap embroidery on curved surface",
     caption: "Cap Embroidery · Curved Surface",
   },
   {
-    image: "/assets/work4.jpg",
+    image: "/assets/showcase/portfolio-puff.webp",
     alt: "3D puff embroidery lettering",
     caption: "3D Puff · Foam Lettering",
   },
   {
-    image: "/assets/work5.jpg",
-    alt: "Embroidered patch badge",
+    image: "/assets/showcase/portfolio-patch.webp",
+    alt: "Embroidered patch with merrowed edge",
     caption: "Patch Digitizing · Merrowed Edge",
   },
   {
-    image: "/assets/work6.jpg",
+    image: "/assets/showcase/portfolio-jacket.webp",
     alt: "Detailed jacket back embroidery",
     caption: "Jacket Back · Large Format",
   },
   {
-    image: "/assets/work7.jpg",
-    alt: "Embroidered polo logo",
+    image: "/assets/showcase/portfolio-polo.webp",
+    alt: "Embroidered polo left chest logo",
     caption: "Left Chest · Corporate Logo",
   },
   {
-    image: "/assets/work8.jpg",
+    image: "/assets/showcase/portfolio-detail.webp",
     alt: "Intricate embroidery design with fine detail",
     caption: "Fine Detail · Micro Lettering",
   },

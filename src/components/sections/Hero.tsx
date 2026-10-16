@@ -71,7 +71,7 @@ export default function Hero() {
       >
         <div className="relative aspect-[8/11] overflow-hidden rounded-2xl border border-line/40 shadow-2xl shadow-black/50">
           <Image
-            src="/assets/hero-left.png"
+            src="/assets/hero-left.webp"
             alt="Embroidered 3D puff crest patch"
             fill
             className="object-cover"
@@ -87,7 +87,7 @@ export default function Hero() {
       >
         <div className="relative aspect-[8/11] overflow-hidden rounded-2xl border border-line/40 shadow-2xl shadow-black/50">
           <Image
-            src="/assets/hero-right.png"
+            src="/assets/hero-right.webp"
             alt="Embroidery hoop with needle stitching"
             fill
             className="object-cover"
@@ -180,7 +180,7 @@ export default function Hero() {
         style={{ y: fgY }}
       >
         <Image
-          src="/assets/hero-foreground.png"
+          src="/assets/hero-foreground.webp"
           alt=""
           fill
           className="object-cover object-top opacity-60"
