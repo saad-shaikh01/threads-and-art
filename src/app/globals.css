@@ -55,6 +55,26 @@
   --animate-draw: draw 5s ease 0.7s forwards;
   --animate-float: float 7s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+  --animate-drift: drift 22s ease-in-out infinite;
+  --animate-spin-slow: spin 30s linear infinite;
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(8%, -6%) scale(1.12);
+    }
+    66% {
+      transform: translate(-6%, 5%) scale(0.92);
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
   @keyframes marquee {
     to {
@@ -79,6 +99,17 @@
   @keyframes float {
     50% {
       transform: translateY(-8px);
+    }
+  }
+  @keyframes jitter {
+    0% {
+      transform: translate(0, 0) rotate(0);
+    }
+    50% {
+      transform: translate(-2px, 1px) rotate(-0.6deg);
+    }
+    100% {
+      transform: translate(2px, -1px) rotate(0.6deg);
     }
   }
   @keyframes pulse-ring {

@@ -1,10 +1,22 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
-import { ArrowUpRight } from "@/components/ui/Icons";
-import { links } from "@/lib/content";
+import { ArrowUpRight, Bolt } from "@/components/ui/Icons";
+import { accountPages, links, servicePages } from "@/lib/content";
 
 const linkClass =
   "py-0.5 text-sm text-muted transition-colors duration-200 hover:text-brand";
+
+const headingClass =
+  "mb-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-ivory/50";
+
+const explore = [
+  { label: "Home", href: "/" },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Our Process", href: "/our-process" },
+  { label: "About Us", href: "/aboutus" },
+  { label: "Blog", href: "/blog" },
+  { label: "Contact Us", href: "/contactus" },
+];
 
 export function Footer() {
   return (
@@ -25,7 +37,8 @@ export function Footer() {
         Threads &amp; Arts
       </span>
 
-      <div className="relative grid grid-cols-2 gap-10 md:grid-cols-[2fr_1fr_1.3fr]">
+      <div className="relative grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-[1.5fr_1fr_1.5fr_1.2fr]">
+        {/* Brand */}
         <div className="col-span-2 md:col-span-1">
           <Logo />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">
@@ -33,38 +46,57 @@ export function Footer() {
             <br />
             Made for real-world production.
           </p>
+          <a href={accountPages.order} className="btn btn-primary btn-sm mt-6">
+            Order Now <ArrowUpRight className="size-3.5" />
+          </a>
+          <p className="mt-4 flex items-center gap-1.5 text-xs text-muted">
+            <Bolt className="size-3.5 text-brand" />
+            First design $10 · 4–6h turnaround
+          </p>
         </div>
 
+        {/* Explore */}
         <div>
-          <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-ivory/50">
-            Explore
-          </h4>
-          <nav className="flex flex-col gap-2.5">
-            <Link href="#services" className={linkClass}>
-              Services
-            </Link>
-            <Link href="#portfolio" className={linkClass}>
-              Our work
-            </Link>
-            <Link href="#process" className={linkClass}>
-              How it works
-            </Link>
+          <h4 className={headingClass}>Explore</h4>
+          <nav aria-label="Explore" className="flex flex-col gap-2.5">
+            {explore.map((l) => (
+              <Link key={l.href} href={l.href} className={linkClass}>
+                {l.label}
+              </Link>
+            ))}
           </nav>
         </div>
 
+        {/* Services (below the two short columns on mobile) */}
+        <div className="col-span-2 max-md:order-last md:col-span-1">
+          <h4 className={headingClass}>Services</h4>
+          <nav aria-label="Services" className="grid grid-cols-2 gap-x-6 gap-y-2.5 md:grid-cols-1">
+            {servicePages.map((s) => (
+              <Link key={s.href} href={s.href} className={linkClass}>
+                {s.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Contact */}
         <div>
-          <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-ivory/50">
-            Let&apos;s talk
-          </h4>
-          <nav className="flex flex-col gap-2.5">
-            <a href={`mailto:${links.email}`} className={linkClass}>
+          <h4 className={headingClass}>Let&apos;s talk</h4>
+          <nav aria-label="Contact" className="flex flex-col gap-2.5">
+            <a href={`mailto:${links.email}`} className={`${linkClass} break-all`}>
               {links.email}
             </a>
-            <a href={links.contact} className={linkClass}>
-              Contact us <ArrowUpRight className="inline size-3" />
+            <Link href="/contactus#quote" className={linkClass}>
+              Get a quote <ArrowUpRight className="inline size-3" />
+            </Link>
+            <a href={links.sampleMail} className={linkClass}>
+              Free sample
             </a>
-            <a href={links.login} className={linkClass}>
-              Client login <ArrowUpRight className="inline size-3" />
+            <a href={accountPages.login} className={linkClass}>
+              Login <ArrowUpRight className="inline size-3" />
+            </a>
+            <a href={accountPages.signup} className={linkClass}>
+              Signup
             </a>
           </nav>
         </div>
@@ -73,18 +105,18 @@ export function Footer() {
       <div className="relative mt-20 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-5 text-[11px] text-muted md:mt-28">
         <span className="max-md:w-full">&copy; 2026 Threads &amp; Arts</span>
         <span className="md:mr-auto">Serving since 2017</span>
-        <a
-          href={links.privacy}
+        <Link
+          href="/privacy-policy"
           className="transition-colors duration-200 hover:text-brand"
         >
           Privacy Policy
-        </a>
-        <a
-          href={links.terms}
+        </Link>
+        <Link
+          href="/terms-of-use"
           className="transition-colors duration-200 hover:text-brand"
         >
           Terms of Use
-        </a>
+        </Link>
       </div>
     </footer>
   );

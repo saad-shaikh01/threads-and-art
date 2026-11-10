@@ -1,21 +1,16 @@
 import { Reveal } from "@/components/ui/Reveal";
-import { SectionTop } from "@/components/ui/SectionHeading";
+import { PosterTop } from "@/components/cinematic/PosterTop";
 import { Spotlight } from "@/components/ui/Spotlight";
 import { industries } from "@/lib/content";
 
 export function Industries() {
   return (
     <section id="industries" className="section-x section-y border-b border-line">
-      <SectionTop
+      <PosterTop
         eyebrow="Industries we serve"
-        title={
-          <>
-            Your production.
-            <br />
-            <em className="text-accent">Our expertise.</em>
-          </>
-        }
-        intro="Made for the people who turn great artwork into products people wear."
+        word="Industries"
+        script="Our expertise."
+        intro="Your production, our expertise. Made for the people who turn great artwork into products people wear."
       />
 
       <div className="grid grid-cols-2 gap-3 md:gap-[1.125rem] lg:grid-cols-4">

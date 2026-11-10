@@ -4,8 +4,8 @@ export const SITE = "https://www.threadsandarts.com";
 
 export const links = {
   login: `${SITE}/login.php`,
-  contact: `${SITE}/contactus`,
-  portfolio: `${SITE}/#portfolio-section`,
+  contact: "/contactus",
+  portfolio: "/portfolio",
   privacy: `${SITE}/privacy-policy`,
   terms: `${SITE}/terms-of-use`,
   email: "admin@threadsandarts.com",
@@ -13,12 +13,55 @@ export const links = {
     "mailto:admin@threadsandarts.com?subject=Free%20sample%20request&body=Hello%20Threads%20%26%20Arts%2C%0A%0AI%27d%20like%20to%20request%20a%20free%20sample.%0A%0ADesign%20size%3A%0AFabric%20or%20product%3A%0AFile%20format%3A%0A%0AI%20will%20attach%20my%20artwork.",
 } as const;
 
-export const nav = [
-  { label: "Services", href: "#services" },
-  { label: "Industries", href: "#industries" },
-  { label: "Portfolio", href: "#portfolio" },
-  { label: "How It Works", href: "#process" },
-  { label: "About", href: "#about" },
+/** Every service page (also the Services dropdown). */
+export const servicePages = [
+  { label: "Vector Arts", title: "Vector Arts", href: "/vectorization-services" },
+  { label: "Logo Embroidery Digitizing", title: "Logo Embroidery Digitizing", href: "/logo-embroidery-digitizing-services" },
+  { label: "3D Puff Embroidery Digitizing", title: "3D Puff Embroidery Digitizing", href: "/3D-puff-embroidery-digitizing-services" },
+  { label: "Gloves Embroidery Digitizing", title: "Gloves Embroidery Digitizing", href: "/glove-embroidery-digitizing-services" },
+  { label: "Sleeves Embroidery Digitizing", title: "Sleeves Embroidery Digitizing", href: "/sleeve-embroidery-digitizing-services" },
+  { label: "Towel Embroidery Digitizing", title: "Towel Embroidery Digitizing", href: "/towel-embroidery-digitizing-services" },
+  { label: "Hat/Cap Embroidery Digitizing", title: "Hat/Cap Embroidery Digitizing", href: "/hat-embroidery-digitizing-services" },
+  { label: "Embroidery Patch Digitizing", title: "Embroidery Patch Digitizing", href: "/embroidered-patch-digitizing-services" },
+  { label: "Applique Digitizing", title: "Applique Digitizing", href: "/applique-embroidery-digitizing-services" },
+] as const;
+
+export type NavItem = {
+  label: string;
+  href: string;
+  children?: readonly { label: string; href: string }[];
+};
+
+export const nav: readonly NavItem[] = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/#services", children: servicePages },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Our Process", href: "/our-process" },
+  { label: "Contact Us", href: "/contactus" },
+  { label: "Blog", href: "/blog" },
+];
+
+/** Blog post ids used on the live site. */
+export const blogIds = [53, 55, 56, 57, 58, 59, 60, 61] as const;
+
+/** Other pages: not in the main nav. */
+export const extraPages = [
+  { label: "About Us", href: "/aboutus" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms of Use", href: "/terms-of-use" },
+] as const;
+
+/** Account flow stays on the existing PHP system for now. */
+export const accountPages = {
+  order: `${SITE}/signup.php`,
+  signup: `${SITE}/signup.php`,
+  login: `${SITE}/login.php`,
+} as const;
+
+export const testimonials = [
+  { quote: "Fast, friendly, and excellent quality! The patches turned out perfect, and I’ll be ordering again soon!", author: "Joseph Tiller" },
+  { quote: "Very professional and reliable service. The pricing is fair, and the quality is excellent. Couldn’t be happier with my order!", author: "Lyle Ainsworth" },
+  { quote: "Great experience from start to finish. The design came out exactly as I wanted, and communication was excellent throughout the process.", author: "Natalie Joseph" },
 ] as const;
 
 export const promises = [

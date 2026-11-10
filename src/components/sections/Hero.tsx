@@ -2,33 +2,65 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowUpRight } from "@/components/ui/Icons";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Bolt } from "@/components/ui/Icons";
 import { formats } from "@/lib/content";
+
+const STATS = [
+  { val: "50,000+", label: "Designs Delivered" },
+  { val: "400+", label: "Active Shops" },
+  { val: "100%", label: "Unlimited Revisions" },
+];
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [offsetY, setOffsetY] = useState(0);
+  const compareRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+
+  const [pos, setPos] = useState(38);
+  const [isDragging, setIsDragging] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
 
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const leftX = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
-  const rightX = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
-  const fgY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
-  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-
+  // Reveal sweep on mount, then it's yours to drag.
   useEffect(() => {
-    const onPointer = (e: PointerEvent) => {
-      setOffsetY(((e.clientY / window.innerHeight) - 0.5) * 12);
-    };
-    window.addEventListener("pointermove", onPointer, { passive: true });
-    return () => window.removeEventListener("pointermove", onPointer);
+    const t = setTimeout(() => setPos(56), 500);
+    return () => clearTimeout(t);
   }, []);
+
+  const updateFromClientX = useCallback((clientX: number) => {
+    const el = compareRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const pct = ((clientX - rect.left) / rect.width) * 100;
+    setPos(Math.min(88, Math.max(12, pct)));
+  }, []);
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    draggingRef.current = true;
+    setIsDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    updateFromClientX(e.clientX);
+  };
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    updateFromClientX(e.clientX);
+  };
+  const endDrag = () => {
+    draggingRef.current = false;
+    setIsDragging(false);
+  };
 
   return (
     <section
@@ -36,25 +68,19 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen w-full overflow-hidden border-b border-line"
     >
-      {/* ── Layer 0: Full-bleed background image ── */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{ y: bgY }}
-      >
+      {/* ── Layer 0: Ambient background ── */}
+      <motion.div className="absolute inset-0 z-0" style={{ y: bgY }}>
         <Image
           src="/assets/hero-bg.jpg"
           alt=""
           fill
           priority
-          className="object-cover object-center"
+          className="object-cover object-center opacity-40"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-bg/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-bg/40 via-transparent to-bg" />
+        <div className="absolute inset-0 bg-bg/80" />
       </motion.div>
-
-      {/* ── Layer 1: Ambient glows + fabric texture ── */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 z-[1] fabric-texture opacity-30" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-[1] fabric-texture opacity-20" />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-40 right-[-5%] z-[1] h-[520px] w-[520px] rounded-full bg-brand/12 blur-[160px]"
@@ -64,147 +90,178 @@ export default function Hero() {
         className="pointer-events-none absolute bottom-[-10%] left-[-8%] z-[1] h-[440px] w-[440px] rounded-full bg-wine/30 blur-[140px]"
       />
 
-      {/* ── Layer 2: Floating side images (parallax) ── */}
-      <motion.div
-        className="pointer-events-none absolute left-[-6%] top-[15%] z-[2] w-[38%] max-w-[480px] md:left-[-3%] md:top-[12%]"
-        style={{ x: leftX, y: offsetY * 0.5 }}
-      >
-        <div className="relative aspect-[8/11] overflow-hidden rounded-2xl border border-line/40 shadow-2xl shadow-black/50">
-          <Image
-            src="/assets/hero-left.webp"
-            alt="Embroidered 3D puff crest patch"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 40vw, 30vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/60 via-transparent to-transparent" />
-        </div>
-      </motion.div>
-
-      <motion.div
-        className="pointer-events-none absolute right-[-6%] top-[18%] z-[2] w-[34%] max-w-[440px] md:right-[-2%] md:top-[10%]"
-        style={{ x: rightX, y: offsetY * -0.4 }}
-      >
-        <div className="relative aspect-[8/11] overflow-hidden rounded-2xl border border-line/40 shadow-2xl shadow-black/50">
-          <Image
-            src="/assets/hero-right.webp"
-            alt="Embroidery hoop with needle stitching"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 36vw, 28vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-bg/60 via-transparent to-transparent" />
-        </div>
-      </motion.div>
-
-      {/* ── Layer 3: Main content — brand name + hook ── */}
-      <motion.div
-        className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 text-center"
-        style={{ y: textY }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-panel/80 px-4 py-1.5 text-xs font-mono uppercase tracking-widest text-muted backdrop-blur-sm"
-        >
-          <span className="h-2 w-2 rounded-full bg-brand animate-pulse" />
-          <span>EST. 2017</span>
-          <span className="text-line">|</span>
-          <span className="text-ivory font-semibold">4–6H TURNAROUND</span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.2, 0.7, 0.3, 1] }}
-          className="font-display font-normal leading-[0.92] tracking-[-0.04em]"
-        >
-          <span className="block text-[clamp(3.2rem,10vw,9rem)] text-ivory">
-            Threads
-          </span>
-          <span className="block text-[clamp(3.2rem,10vw,9rem)] text-brand italic">
-            &amp; Arts
-          </span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="mt-5 max-w-xl text-base text-muted sm:text-lg md:text-xl leading-relaxed"
-        >
-          Crafted for the Machine.{" "}
-          <em className="text-ivory font-display not-italic">Digitized by Hand.</em>
-          <br className="hidden sm:block" />
-          Production-grade embroidery digitizing for commercial multi-head machines.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8 flex flex-col items-center gap-4 sm:flex-row"
-        >
-          <Link href="#sample" className="btn btn-primary">
-            Get Free Sample <ArrowUpRight className="size-4" />
-          </Link>
-          <Link href="#services" className="btn btn-ghost">
-            View Services
-          </Link>
-        </motion.div>
-
-        {/* Stats row */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-12 flex items-center gap-6 divide-x divide-line text-center sm:gap-10"
-        >
-          {[
-            { val: "50,000+", label: "Designs Delivered" },
-            { val: "400+", label: "Active Shops" },
-            { val: "100%", label: "Unlimited Revisions" },
-          ].map((s) => (
-            <div key={s.label} className="pl-6 first:pl-0 sm:pl-10">
-              <div className="font-mono text-lg font-semibold text-ivory sm:text-2xl">{s.val}</div>
-              <div className="text-[10px] text-muted sm:text-xs">{s.label}</div>
-            </div>
-          ))}
-        </motion.div>
-      </motion.div>
-
-      {/* ── Layer 4: Foreground embroidery strip ── */}
-      <motion.div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 z-[3] h-[140px] sm:h-[180px] md:h-[220px]"
-        style={{ y: fgY }}
-      >
-        <Image
-          src="/assets/hero-foreground.webp"
-          alt=""
-          fill
-          className="object-cover object-top opacity-60"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
-      </motion.div>
-
-      {/* ── Layer 5: Format ticker bar at bottom ── */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-line/60 bg-bg/80 backdrop-blur-md">
-        <div className="section-x flex items-center gap-4 py-3 overflow-hidden">
-          <span className="shrink-0 text-[10px] font-mono uppercase tracking-widest text-brand">
-            MACHINE-READY
-          </span>
-          <div className="flex animate-marquee gap-4 whitespace-nowrap">
-            {[...formats, ...formats].map((ext, i) => (
-              <span
-                key={`${ext}-${i}`}
-                className="rounded-md border border-line/60 bg-panel/60 px-3 py-1 text-[11px] font-mono text-muted"
-              >
-                .{ext}
+      {/* ── Layer 1: Main content ── */}
+      <div className="section-x relative z-10 flex min-h-screen flex-col justify-center pb-24 pt-[calc(var(--header-h)+2rem)] md:pb-28">
+        <div className="grid w-full items-center gap-12 lg:grid-cols-12 lg:gap-8">
+          {/* Right (on desktop) — copy */}
+          <div className="order-2 lg:col-span-6 lg:order-2 xl:col-span-6">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex flex-wrap items-center gap-2.5 rounded-full border border-line bg-panel/80 px-4 py-1.5 text-xs font-mono uppercase tracking-widest text-muted backdrop-blur-sm"
+            >
+              <span className="h-2 w-2 rounded-full bg-brand animate-pulse" />
+              <span>EST. 2017</span>
+              <span className="text-line">|</span>
+              <span className="text-ivory font-semibold">4–6H TURNAROUND</span>
+              <span className="text-line">|</span>
+              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                DIGITIZERS ONLINE
               </span>
-            ))}
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.2, 0.7, 0.3, 1] }}
+              className="mt-6 font-display font-normal leading-[1.03] tracking-[-0.03em] text-[clamp(2.4rem,5vw,4.2rem)]"
+            >
+              <span className="block text-ivory">Crafted for the Machine.</span>
+              <span className="block text-brand italic">Digitized by Hand.</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-5 max-w-lg text-base leading-relaxed text-muted sm:text-lg"
+            >
+              Production-grade embroidery digitizing for commercial multi-head
+              machines. Threads &amp; Arts transforms flat artwork into
+              flawless, machine-ready files.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
+              className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
+            >
+              <Link href="#sample" className="btn btn-primary">
+                Get Free Sample <ArrowUpRight className="size-4" />
+              </Link>
+              <Link href="#services" className="btn btn-ghost">
+                View Services
+              </Link>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.55 }}
+              className="mt-4 flex items-center gap-1.5 text-xs text-muted"
+            >
+              <Bolt className="size-3.5 text-brand" />
+              Free first design up to 10,000 stitches &middot; No card required
+            </motion.p>
+
+            {/* Stats row */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.65 }}
+              className="mt-10 flex items-center gap-6 divide-x divide-line sm:gap-10"
+            >
+              {STATS.map((s) => (
+                <div key={s.label} className="pl-6 first:pl-0 sm:pl-10">
+                  <div className="font-mono text-lg font-semibold text-ivory sm:text-2xl">
+                    {s.val}
+                  </div>
+                  <div className="text-[10px] text-muted sm:text-xs">{s.label}</div>
+                </div>
+              ))}
+            </motion.div>
           </div>
+
+          {/* Left (on desktop) — interactive before/after showcase */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.25, ease: [0.2, 0.7, 0.3, 1] }}
+            className="order-1 lg:col-span-6 lg:order-1 xl:col-span-6"
+          >
+            {/* "slide to discover" label */}
+            <div className="mb-3 flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted">
+              <ArrowLeft className="size-3.5" />
+              Slide to discover
+              <ArrowRight className="size-3.5" />
+            </div>
+
+            <div
+              ref={compareRef}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
+              onPointerLeave={endDrag}
+              className="group relative aspect-[6/5] w-full touch-none select-none overflow-hidden rounded-2xl border border-line/50 bg-panel shadow-2xl shadow-black/50 cursor-ew-resize sm:aspect-[5/4]"
+            >
+              {/* After — finished embroidery (base layer) */}
+              <Image
+                src="/assets/tf-finished.jpg"
+                alt="Finished dimensional embroidery"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 90vw, 45vw"
+                priority
+              />
+
+              {/* Before — original flat artwork (clipped layer) */}
+              <div
+                className={`absolute inset-0 ${isDragging ? "" : "transition-[clip-path] duration-700 ease-out"}`}
+                style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
+              >
+                <Image
+                  src="/assets/tf-artwork.jpg"
+                  alt="Original flat artwork"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 90vw, 45vw"
+                />
+              </div>
+
+              {/* Divider + handle */}
+              <div
+                className={`absolute inset-y-0 z-20 w-px bg-brand/80 ${isDragging ? "" : "transition-[left] duration-700 ease-out"}`}
+                style={{ left: `${pos}%` }}
+              >
+                <div className="absolute left-1/2 top-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-0.5 rounded-full border border-line bg-panel/90 text-ivory shadow-lg backdrop-blur-sm">
+                  <ArrowLeft className="size-3" />
+                  <ArrowRight className="size-3" />
+                </div>
+              </div>
+
+              {/* Corner tags */}
+              <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-md border border-line/50 bg-bg/70 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wide text-muted backdrop-blur-sm sm:left-4 sm:top-4">
+                AI · EPS · PNG · PDF <span className="text-ivory">Input</span>
+              </div>
+              <div className="pointer-events-none absolute right-3 top-3 z-10 rounded-md border border-line/50 bg-bg/70 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wide text-muted backdrop-blur-sm sm:right-4 sm:top-4">
+                Stitch-Ready <span className="text-ivory">Output</span>
+              </div>
+
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center justify-between bg-gradient-to-t from-bg/90 to-transparent px-4 pb-3 pt-10 text-[10px] font-mono uppercase tracking-widest text-muted sm:px-5">
+                <span>Original Artwork</span>
+                <span className="text-ivory">Embroidery Digitizing</span>
+              </div>
+            </div>
+
+            {/* Machine-ready format chips */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="shrink-0 text-[10px] font-mono uppercase tracking-widest text-brand">
+                Machine-Ready
+              </span>
+              {formats.slice(0, 6).map((ext) => (
+                <span
+                  key={ext}
+                  className="rounded-md border border-line/60 bg-panel/60 px-2.5 py-1 text-[11px] font-mono text-muted"
+                >
+                  .{ext}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import { PosterTop } from "@/components/cinematic/PosterTop";
 import { Reveal } from "@/components/ui/Reveal";
 import { reasons } from "@/lib/content";
 import type { ReactNode } from "react";
@@ -107,14 +108,12 @@ function NoteCard({
 export function About() {
   return (
     <section id="about" className="section-x section-y border-b border-line">
-      <Reveal className="mb-10 text-center md:mb-14">
-        <p className="eyebrow mb-4">Why Choose Us</p>
-        <h2 className="heading-2">
-          5 Reasons to work
-          <br />
-          <em className="text-accent">with us.</em>
-        </h2>
-      </Reveal>
+      <PosterTop
+        eyebrow="Why choose us"
+        word="Why us?"
+        script="Five reasons."
+        intro="Five reasons decorators, print shops and brands keep sending us their artwork."
+      />
 
       <div
         className="relative mx-auto max-w-2xl overflow-hidden rounded-xl p-4 md:p-8 lg:p-12"

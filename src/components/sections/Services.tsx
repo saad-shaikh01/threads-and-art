@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { PosterTop } from "@/components/cinematic/PosterTop";
 
 interface ServiceItem {
   id: string;
@@ -76,22 +77,13 @@ export default function Services() {
       className="relative w-full bg-[#111515] text-[#f0ede4] py-20 md:py-28 border-b border-[#303635]"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-[#f31e39] mb-2">
-              02 / SPECIALIZED DIGITIZING SERVICES
-            </div>
-            <h2
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-              className="text-3xl sm:text-4xl md:text-5xl font-normal text-[#f0ede4]"
-            >
-              Engineered for Every Garment & Surface
-            </h2>
-          </div>
-          <p className="max-w-md text-sm sm:text-base text-[#afb2ac]">
-            Select any specialty card to inspect its 3D studio render, macro thread sheen, and stitch engineering in the live workbench.
-          </p>
-        </div>
+        <PosterTop
+          eyebrow="02 / Specialized digitizing services"
+          word="Services"
+          script="Every surface."
+          intro="Engineered for every garment and surface. Select any specialty card to inspect its 3D studio render, macro thread sheen and stitch engineering in the live workbench."
+          className="mb-14"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left 7 Columns: 2x2 Visual 3D Studio Asset Cards */}

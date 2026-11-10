@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "@/components/ui/Icons";
-import { SectionTop } from "@/components/ui/SectionHeading";
+import { PosterTop } from "@/components/cinematic/PosterTop";
 import { steps } from "@/lib/content";
 
 const ICONS = [
@@ -26,16 +26,11 @@ export function Process() {
       />
 
       <div className="section-x section-y relative z-10">
-        <SectionTop
+        <PosterTop
           eyebrow="How it works"
-          title={
-            <>
-              From your artwork
-              <br />
-              to the <em className="text-accent">final stitch.</em>
-            </>
-          }
-          intro="A simple process. A production-ready result."
+          word="Process"
+          script="Art to stitch."
+          intro="From your artwork to the final stitch. A simple process, a production-ready result."
           aside={
             <Link href="#sample" className="btn btn-outline btn-sm">
               Start Your Free Sample <ArrowUpRight className="size-3.5" />

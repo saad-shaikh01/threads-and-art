@@ -1,0 +1,135 @@
+import type { ServiceDetail } from "../service-details";
+import { img, portfolio, S } from "./shared";
+
+const F = "vector";
+
+export const vector: ServiceDetail = {
+  poster: { word: "Vector", script: "Crisp." },
+  eyebrow: "Vector art conversion",
+  lead: "Blurry JPG, low-res screenshot or a photo of a sketch — we redraw it by hand as clean vector art. Smooth curves, minimal nodes, separated spot colors and files ready for screen printing, signs, DTF and laser.",
+  hero: img(F, "vector-hero", S.tfPathing, "Logo redrawn as clean vector paths with visible anchor points"),
+  callouts: [
+    { x: "36%", y: "30%", side: "left", label: "Paths", value: "Hand-drawn" },
+    { x: "60%", y: "46%", side: "right", label: "Colors", value: "Spot / Pantone" },
+    { x: "28%", y: "72%", side: "left", label: "Scale", value: "Any size · 0 blur" },
+  ],
+  stats: [
+    { value: "4–6h", label: "Standard turnaround" },
+    { value: "$10", label: "Your first design" },
+    { value: "100%", label: "Scalable, zero blur" },
+    { value: "6", label: "File formats" },
+  ],
+  statement: {
+    eyebrow: "Why vector matters",
+    text: "Pixels *blur* when you scale them, *bleed* when you separate colors and *fail* on cutters and lasers. Vector is *math* — sharp at any size.",
+    note: "Auto-trace tools give you thousands of wobbly nodes. We redraw your artwork by hand, so it's clean enough to print, cut or digitize from.",
+  },
+  compare: {
+    eyebrow: "Same artwork · two files",
+    word: "Pixels",
+    script: "vs. paths.",
+    intro: "Left: your original raster file, enlarged. Right: our hand-drawn vector at the same size. Drag the handle to compare.",
+    before: { ...img(F, "vector-before-raster", S.tigerBad, "Low-resolution raster logo with blurry, pixelated edges"), label: "Raster" },
+    after: { ...img(F, "vector-after-vector", S.tfPathing, "Clean vector logo with smooth curves and sharp edges"), label: "Vector" },
+    points: [
+      { bad: "Blurry edges", good: "Sharp at any size", text: "Mathematical curves stay crisp from a business card to a billboard." },
+      { bad: "Muddy colors", good: "Separated spot colors", text: "Each color on its own layer, matched to Pantone for print." },
+      { bad: "Wobbly auto-trace", good: "Smooth, minimal nodes", text: "Curves redrawn by hand with as few anchor points as possible." },
+      { bad: "Can't cut or engrave", good: "Cutter & laser ready", text: "Closed, clean paths that plotters and lasers follow precisely." },
+    ],
+  },
+  engineering: {
+    eyebrow: "What goes into a vector file",
+    word: "Drawn,",
+    script: "not traced.",
+    intro: "Five things separate production-ready vector art from an auto-trace. We handle each by hand.",
+    items: [
+      {
+        kicker: "Paths",
+        title: "Smooth curves, minimal nodes",
+        text: "Auto-trace drops a node on every pixel edge, which makes curves wobble and files heavy. We redraw each shape with the fewest anchor points needed, so curves flow and edges are sharp.",
+        specs: ["Hand-drawn Béziers", "Minimal anchors", "Closed shapes"],
+        image: img(F, "vector-eng-paths", S.tfPathing, "Vector curve with few anchor points and handles visible"),
+      },
+      {
+        kicker: "Color",
+        title: "Spot-color separation",
+        text: "For screen printing, every ink is a separate screen. We build each color as its own layer, match to Pantone where you need it and remove stray tones so separations are clean.",
+        specs: ["Layer per color", "Pantone matching", "Print-ready seps"],
+        image: img(F, "vector-eng-color", S.crest, "Artwork separated into individual spot-color layers"),
+      },
+      {
+        kicker: "Detail",
+        title: "Rebuilt, not guessed",
+        text: "Missing detail in a blurry file? We redraw it from what's there and your references — fixing lettering, re-setting text with the right font where possible, and cleaning broken shapes.",
+        specs: ["Font matching", "Lettering cleanup", "Detail rebuilt"],
+        image: img(F, "vector-eng-detail", S.detail, "Before and after of rebuilt vector lettering"),
+      },
+      {
+        kicker: "Formats",
+        title: "Every file you'll need",
+        text: "You get the master file plus the formats your printer, sign shop or laser wants: AI, EPS, SVG and PDF, plus high-res PNG and JPG previews.",
+        specs: ["AI · EPS · SVG", "PDF (print)", "PNG · JPG previews"],
+        image: img(F, "vector-eng-formats", S.tfPreview, "Vector file exported to several formats"),
+      },
+      {
+        kicker: "Production",
+        title: "Ready for any process",
+        text: "Screen printing needs separations, vinyl cutting needs single closed paths, lasers need clean strokes, embroidery digitizing needs clear shapes. Tell us the use and we'll prep for it.",
+        specs: ["Screen print", "Vinyl & laser", "DTF / DTG / signs"],
+        image: img(F, "vector-eng-production", S.tfFinished, "Vector artwork used for screen printing, vinyl and laser"),
+      },
+    ],
+  },
+  applications: {
+    eyebrow: "Wherever you print",
+    word: "Every",
+    script: "surface.",
+    items: [
+      { title: "Screen printing", text: "Clean spot-color separations for every screen.", image: img(F, "vector-app-screen", S.polo, "Screen-printed shirt from vector artwork") },
+      { title: "Signs & banners", text: "Scale to any size without a single blurry edge.", image: img(F, "vector-app-signs", S.wings, "Large sign printed from vector artwork") },
+      { title: "Vinyl & heat transfer", text: "Closed paths that cut perfectly on plotters.", image: img(F, "vector-app-vinyl", S.logo, "Vinyl cutter cutting vector shapes") },
+      { title: "Laser engraving", text: "Clean strokes for wood, metal and acrylic.", image: img(F, "vector-app-laser", S.crest, "Laser-engraved logo on wood") },
+      { title: "DTF & DTG", text: "Sharp art for direct-to-film and garment printing.", image: img(F, "vector-app-dtf", S.jacket, "DTF transfer printed from vector art") },
+      { title: "Embroidery prep", text: "Clean shapes our digitizers can stitch from.", image: img(F, "vector-app-embroidery", S.lion, "Vector artwork beside its embroidered result") },
+    ],
+  },
+  cheapVsPro: {
+    intro: "A bad vector looks fine on screen and falls apart at the printer. Hover a card to see what we do instead.",
+    items: [
+      { cheap: { title: "One-click auto-trace", text: "Thousands of nodes and wobbly curves." }, pro: { title: "Hand-drawn paths", text: "Smooth curves with minimal anchor points." } },
+      { cheap: { title: "Embedded raster", text: "A JPG pasted inside an AI file." }, pro: { title: "True vector", text: "Every shape is real, editable paths." } },
+      { cheap: { title: "Merged colors", text: "Gradients and stray tones break separations." }, pro: { title: "Clean separations", text: "One layer per spot color, Pantone-matched." } },
+      { cheap: { title: "One format only", text: "Back and forth asking for the right file." }, pro: { title: "Every format", text: "AI, EPS, SVG, PDF and previews included." } },
+    ],
+  },
+  faqs: [
+    { q: "What's the difference between raster and vector?", a: "**Raster** images (JPG, PNG) are made of pixels and blur when enlarged. **Vector** files (AI, EPS, SVG, PDF) are made of mathematical paths and stay sharp at any size." },
+    { q: "Which formats will I receive?", a: "**AI, EPS, SVG and PDF**, plus high-resolution **PNG and JPG** previews. Need CDR or DXF? Just ask." },
+    { q: "Do you use auto-trace?", a: "No. Every file is redrawn by hand. Auto-trace creates too many nodes and wobbly curves that cause problems at the printer, cutter or laser." },
+    { q: "Can you work from a blurry photo or sketch?", a: "Yes. We redraw from whatever you have and rebuild missing details. The clearer the original, the closer the match — we'll ask if anything is unclear." },
+    { q: "Can you separate colors for screen printing?", a: "Yes. Each color is built on its own layer and can be matched to Pantone spot colors, ready for film output." },
+    { q: "Can you also digitize the vector for embroidery?", a: "Yes. Clean vector art makes the best embroidery files. See our [logo digitizing service](/logo-embroidery-digitizing-services)." },
+    { q: "How fast is the turnaround, and are revisions free?", a: "Standard turnaround is **4–6 hours**. You'll see a preview first, and minor revisions are free." },
+  ],
+  portfolio: portfolio("tfPathing", "tfPreview", "lion", "crest", "wings", "logo"),
+  marquee: ["Hand-drawn", "Zero blur", "Print-ready", "Any size"],
+  cta: { word: "Vector?", script: "Victory.", text: "Send any image you have. We'll return clean, print-ready vector art in 4–6 hours — your first design is just $10." },
+  ticker: { label: "Print-ready", items: ["ai", "eps", "svg", "pdf", "png", "jpg", "cdr", "dxf"] },
+  heroNote: "Hand-drawn vectors · Unlimited minor revisions",
+  processIntro: "From the image you have to clean, scalable art — usually the same working day.",
+  process: [
+    { title: "Send any image", text: "JPG, PNG, a screenshot or a photo of a sketch. Tell us how you'll use it: screen print, sign, vinyl, laser or embroidery.", meta: "~2 min" },
+    { title: "We redraw by hand", text: "A designer rebuilds every shape as clean vector paths, matches fonts and separates colors for your print process.", meta: "4–6 hours" },
+    { title: "Review the proof", text: "You get a proof before final delivery. Want a change? Minor revisions are free.", meta: "Free revisions" },
+    { title: "Download every format", text: "AI, EPS, SVG and PDF, plus PNG and JPG previews — ready for your printer or cutter.", meta: "Print-ready" },
+  ],
+  included: [
+    "Hand-drawn by a vector designer, never auto-traced",
+    "Proof before final delivery",
+    "Free minor revisions until it's right",
+    "AI, EPS, SVG, PDF + PNG/JPG previews",
+    "Spot-color separation on request",
+    "4–6 hour standard turnaround",
+  ],
+};
